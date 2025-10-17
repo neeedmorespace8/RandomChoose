@@ -8,7 +8,7 @@
         /* --- General Page Styles --- */
         :root {
             --background-color: #121212;
-            --surface-color: #2a2a2a;
+            --surface-color: #333;
             --primary-text-color: #e0e0e0;
             --secondary-text-color: #a0a0a0;
             --primary-accent-color: #3498db;
@@ -532,6 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         optionsList.querySelectorAll('.name-input').forEach(input => {
             input.addEventListener('keydown', (e) => {
+                // ... (原本的 keydown 邏輯不變) ...
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     const currentIndex = parseInt(e.currentTarget.dataset.index, 10);
@@ -542,15 +543,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (nextInput) nextInput.focus();
                 }
             });
+
+            input.addEventListener('focus', (e) => {
+                setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300); // 延遲 300 毫秒是為了等待鍵盤動畫播放完畢
+            });
         });
         
         optionsList.querySelectorAll('.weight-input').forEach(input => {
             input.addEventListener('input', () => {
+                // ... (原本的 input 邏輯不變) ...
                 updateOptionsFromDOM();
                 const totalWeight = options.reduce((sum, opt) => sum + (opt.weight || 1), 0) || 1;
                 optionsList.querySelectorAll('.weight-fraction').forEach((span, index) => {
-                    span.textContent = `${options[index].weight || 1}/${totalWeight}`;
+                    span.textContent = `權重: ${options[index].weight || 1}/${totalWeight}`;
                 });
+            });
+
+            input.addEventListener('focus', (e) => {
+                setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
             });
         });
     };
@@ -582,6 +596,12 @@ document.addEventListener('DOMContentLoaded', () => {
         renderOptionsEditor(); 
         const inputs = optionsList.querySelectorAll('.name-input');
         if (inputs.length > 0) inputs[inputs.length - 1].focus();
+    });
+
+    questionInput.addEventListener('focus', (e) => {
+        setTimeout(() => {
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
     });
 
    // Initial setup
