@@ -5,48 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>隨機轉盤</title>
     <style>
-        /* --- 整體頁面樣式 --- */
+        /* --- General Page Styles --- */
+        :root {
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-text-color: #e0e0e0;
+            --secondary-text-color: #a0a0a0;
+            --primary-accent-color: #3498db;
+            --danger-color: #e74c3c;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
+            background-color: var(--background-color);
+            color: var(--primary-text-color);
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* 改為從頂部對齊 */
+            align-items: flex-start;
             min-height: 100svh;
-            -webkit-tap-highlight-color: transparent; /* 移除點擊時的藍色背景 */
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- 主要容器 --- */
+        /* --- Main Container --- */
         .container {
             width: 100%;
-            max-width: 480px; /* 適合手機的最大寬度 */
+            max-width: 480px;
             padding: 20px;
             box-sizing: border-box;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            height: 100svh;
         }
 
-        h1 {
-            color: #1c1e21;
+        h2.title {
+            color: var(--primary-text-color);
             margin-bottom: 20px;
+            font-size: 1.5em;
         }
 
-        /* --- 輪盤與指針 --- */
+        /* --- Wheel & Pointer --- */
         .wheel-container {
             position: relative;
-            width: 90vw; /* 使用vw單位，使其與螢幕寬度相關 */
+            width: 90vw;
             height: 90vw;
             max-width: 320px;
             max-height: 320px;
             margin: 20px auto;
+            flex-shrink: 0;
         }
 
         #wheelCanvas {
             width: 100%;
             height: 100%;
-            transition: transform 5s cubic-bezier(0.25, 1, 0.5, 1); /* CSS動畫，用於旋轉 */
+            transition: transform 5s cubic-bezier(0.25, 1, 0.5, 1);
         }
         
         .pointer {
@@ -58,232 +72,497 @@
             height: 0;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-top: 35px solid #e74c3c; /* 指針顏色 */
+            border-top: 35px solid var(--danger-color);
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
             z-index: 10;
         }
 
-        /* --- 結果顯示區 --- */
+        /* --- Result Display --- */
         #result {
-            margin-top: 10px;
-            font-size: 1.3em;
+            margin-top: 5px;
+            font-size: 1.2em;
             font-weight: bold;
-            color: #2c3e50;
-            min-height: 1.8em; /* 預留空間，避免跳動 */
+            color: var(--primary-text-color);
+            min-height: 1.8em;
             padding: 5px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* --- 控制項 --- */
-        .controls {
-            margin-top: 10px;
-        }
-
-        #nameInput {
-            width: 100%;
-            height: 120px;
-            padding: 12px;
-            box-sizing: border-box;
-            margin-bottom: 0px;
-            border: 1px solid #dddfe2;
+            background-color: var(--surface-color);
             border-radius: 8px;
-            font-size: 1em;
-            resize: vertical; /* 允許用戶垂直調整大小 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
-        #nameInput:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+
+        /* --- Controls --- */
+        .controls {
+            margin-top: 0;
+            padding-top: 10px;
         }
 
         button {
             width: 100%;
-            padding: 18px;
+            padding: 13px;
             font-size: 1.2em;
             font-weight: bold;
             cursor: pointer;
             border: none;
             border-radius: 8px;
-            background-color: #3498db;
             color: white;
-            margin-top: 10px;
             transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        #spinButton {
+             background-color: var(--primary-accent-color);
+             margin-top: 10px;
+        }
+        
+        #editOptionsButton {
+            background-color: var(--surface-color);
+            color: var(--primary-accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         button:active {
-            transform: scale(0.98); /* 點擊時的微小縮放效果 */
+            transform: scale(0.98);
         }
 
         button:disabled {
-            background-color: #bdc3c7;
+            background-color: #555;
+            color: #999;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* --- Options Modal --- */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.3s ease;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-container {
+            background-color: var(--background-color);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--surface-color);
+            flex-shrink: 0;
+        }
+        
+        .modal-header button {
+            width: auto;
+            padding: 5px 15px;
+            font-size: 1em;
+            background: none;
+            color: var(--primary-accent-color);
+            font-weight: normal;
+        }
+        
+        .modal-header h3 { margin: 0; }
+        
+        .modal-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .question-input-group {
+            display: flex;
+            align-items: center;
+            background-color: var(--surface-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .question-input-group span {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        #questionInput {
+            background: none;
+            border: none;
+            color: var(--primary-text-color);
+            font-size: 1em;
+            width: 100%;
+        }
+        #questionInput:focus { outline: none; }
+        #optionsList { list-style: none; padding: 0; margin: 0; }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            background-color: var(--surface-color);
+            padding: 5px 15px 5px 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .option-item .remove-btn {
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 18px;
+            line-height: 22px;
+            text-align: center;
+            cursor: pointer;
+            padding: 0;
+            margin-right: 10px;
+            border: none;
+            flex-shrink: 0;
+        }
+        
+        .option-item input.name-input {
+            flex-grow: 1;
+            background: none;
+            border: none;
+            color: var(--primary-text-color);
+            font-size: 1em;
+            padding: 10px 5px;
+        }
+        .option-item input.name-input:focus { outline: none; }
+
+        .option-item .weight-input {
+            width: 40px;
+            background-color: #333;
+            border: 1px solid #555;
+            color: var(--primary-text-color);
+            text-align: center;
+            border-radius: 4px;
+            margin: 0 10px;
+            -moz-appearance: textfield;
+        }
+        .option-item .weight-input::-webkit-outer-spin-button,
+        .option-item .weight-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .option-item .weight-fraction {
+            min-width: 40px;
+            text-align: right;
+            color: var(--secondary-text-color);
+        }
+
+        #addOptionButton {
+            width: 100%;
+            padding: 15px;
+            font-size: 1em;
+            font-weight: normal;
+            background-color: transparent;
+            color: var(--primary-accent-color);
+            text-align: left;
+            border-top: 1px solid #444;
+            border-bottom: 1px solid #444;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>隨機轉盤</h2>
+        <h2 class="title" id="wheelTitle">隨機轉盤</h2>
 
         <div class="wheel-container">
             <div class="pointer"></div>
             <canvas id="wheelCanvas" width="500" height="500"></canvas>
         </div>
 
-        <div id="result">請先輸入選項</div>
+        <div id="result">請設定選項</div>
 
         <div class="controls">
-            <textarea id="nameInput" placeholder="請輸入多個名稱，每個名稱用「換行」或「逗號」分隔..."></textarea>
-            <!-- <button id="updateButton">更新輪盤選項</button> -->
+            <button id="editOptionsButton">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
+                    <rect x="3" y="6" width="18" height="2" rx="1"></rect>
+                    <rect x="3" y="11" width="18" height="2" rx="1"></rect>
+                    <rect x="3" y="16" width="18" height="2" rx="1"></rect>
+                </svg>
+                設定選項
+            </button>
             <button id="spinButton" disabled>開始旋轉！</button>
         </div>
     </div>
 
+    <div id="optionsModal" class="modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <button id="cancelButton">取消</button>
+                <h3>編輯選項</h3>
+                <button id="saveButton">儲存</button>
+            </div>
+            <div class="modal-content">
+                <div class="question-input-group">
+                    <span>🤔</span>
+                    <input type="text" id="questionInput" placeholder="請輸入問題標題 (例如：誰是起始玩家)">
+                </div>
+                
+                <p>選項 (enter 可接續下一個選項)</p>
+                <ul id="optionsList">
+                    </ul>
+                <button id="addOptionButton">+ 添加新選項</button>
+            </div>
+        </div>
+    </div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const canvas = document.getElementById('wheelCanvas');
-        const ctx = canvas.getContext('2d');
-        const nameInput = document.getElementById('nameInput');
-        const spinButton = document.getElementById('spinButton');
-        const resultDiv = document.getElementById('result');
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const spinButton = document.getElementById('spinButton');
+    const resultDiv = document.getElementById('result');
+    const wheelTitle = document.getElementById('wheelTitle');
+    const optionsModal = document.getElementById('optionsModal');
+    const editOptionsButton = document.getElementById('editOptionsButton');
+    const saveButton = document.getElementById('saveButton');
+    const cancelButton = document.getElementById('cancelButton');
+    const questionInput = document.getElementById('questionInput');
+    const optionsList = document.getElementById('optionsList');
+    const addOptionButton = document.getElementById('addOptionButton');
 
-        let options = [];
-        let currentAngle = 0; // 僅記錄 0-360 度的最終位置
-        let isSpinning = false;
-        let debounceTimer;
+    let options = []; 
+    let currentAngle = 0;
+    let isSpinning = false;
+    
+    const colors = [
+        '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#3498db',
+        '#9b59b6', '#34495e', '#1abc9c', '#d35400', '#c0392b'
+    ];
+
+    const drawWheel = () => {
+        const totalWeight = options.reduce((sum, opt) => sum + (opt.weight || 0), 0);
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = canvas.width / 2 - 20;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (totalWeight === 0) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#333'; // 灰色
+            ctx.fill();
+            return;
+        }
         
-        const colors = [
-            '#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', 
-            '#34495e', '#1abc9c', '#e67e22', '#d35400', '#c0392b'
-        ];
+        ctx.font = '22px Arial';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
 
-        const drawWheel = () => {
-            const numOptions = options.length;
-            if (numOptions === 0) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                return;
-            }
+        let startAngle = 0;
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+            const arcSize = (2 * Math.PI) * (option.weight / totalWeight);
+            if (arcSize <= 0) continue;
+            const endAngle = startAngle + arcSize;
             
-            const arcSize = (2 * Math.PI) / numOptions;
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = canvas.width / 2 - 20;
+            ctx.beginPath();
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fill();
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = '22px Arial';
-            ctx.textBaseline = 'middle';
-            ctx.textAlign = 'center';
-
-            for (let i = 0; i < numOptions; i++) {
-                const angle = i * arcSize;
-                
-                ctx.beginPath();
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
-                ctx.closePath();
-                ctx.fill();
-
-                ctx.save();
-                ctx.fillStyle = '#fff';
-                const textAngle = angle + arcSize / 2;
-                ctx.translate(
-                    centerX + Math.cos(textAngle) * radius * 0.6,
-                    centerY + Math.sin(textAngle) * radius * 0.6
-                );
-                ctx.rotate(textAngle + Math.PI / 2);
-                
-                const text = options[i];
-                ctx.fillText(text.length > 8 ? text.substring(0, 7) + '…' : text, 0, 0);
-                ctx.restore();
-            }
-        };
-
-        const updateOptions = () => {
-            const rawInput = nameInput.value;
-            options = rawInput
-                .split(/[\n,]+/)
-                .map(name => name.trim())
-                .filter(name => name !== '');
-
-            if (options.length > 1) {
-                spinButton.disabled = false;
-                resultDiv.textContent = '準備就緒！';
-                resultDiv.classList.remove('result-pop');
-            } else {
-                spinButton.disabled = true;
-                if(options.length === 1) {
-                    resultDiv.textContent = '請至少輸入兩個選項';
-                } else {
-                    resultDiv.textContent = '請先輸入選項';
-                }
-            }
+            ctx.save();
+            ctx.fillStyle = '#fff';
+            const textAngle = startAngle + arcSize / 2;
+            ctx.translate(
+                centerX + Math.cos(textAngle) * radius * 0.6,
+                centerY + Math.sin(textAngle) * radius * 0.6
+            );
+            ctx.rotate(textAngle + Math.PI / 2);
             
-            canvas.style.transition = 'none';
-            currentAngle = 0;
-            canvas.style.transform = `rotate(0deg)`;
-            drawWheel();
-        };
-        
-        const spin = () => {
-            if (isSpinning || options.length < 2) return;
+            const text = option.name;
+            ctx.fillText(text.length > 8 ? text.substring(0, 7) + '…' : text, 0, 0);
+            ctx.restore();
 
-            isSpinning = true;
+            startAngle = endAngle;
+        }
+    };
+    
+    const updateUIFromOptions = () => {
+        wheelTitle.textContent = questionInput.value.trim() || "隨機轉盤";
+        if (options.length > 1) {
+            spinButton.disabled = false;
+            resultDiv.textContent = '準備就緒！';
+        } else {
             spinButton.disabled = true;
-            resultDiv.textContent = '轉動中...';
-            resultDiv.classList.remove('result-pop');
-
-            // 核心改變：每次旋轉都是在當前角度基礎上，加上一個新的、大的旋轉量
-            const spinAngle = Math.random() * 360 + 360 * 5; // 至少轉5圈
-            const totalAngle = currentAngle + spinAngle;
-            
-            // 啟用轉場動畫
-            canvas.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.4, 1)';
-            canvas.style.transform = `rotate(${totalAngle}deg)`;
-
-            setTimeout(() => {
-                const finalAngle = totalAngle % 360; // 計算出最終停在 0-360 的哪個角度
-                
-                let winningAngle = (270 - finalAngle) % 360;
-                if (winningAngle < 0) {
-                    winningAngle += 360;
-                }
-
-                const arcSizeDegrees = 360 / options.length;
-                const winnerIndex = Math.floor(winningAngle / arcSizeDegrees);
-
-                const winnerText = options[winnerIndex] || '無結果';
-                resultDiv.textContent = `恭喜： ${winnerText}`;
-                resultDiv.classList.add('result-pop');
-                
-                // === 【核心修正與重設】 ===
-                // 1. 更新 currentAngle 為下一次旋轉的起點
-                currentAngle = finalAngle;
-
-                // 2. 為了讓下一次旋轉有力，禁用動畫並將 transform 重設為當前角度
-                //    這樣下次旋轉就會從 `currentAngle` 開始，而不是從龐大的 `totalAngle` 開始
-                canvas.style.transition = 'none';
-                canvas.style.transform = `rotate(${currentAngle}deg)`;
-                // === 【修正結束】 ===
-
-                isSpinning = false;
-                spinButton.disabled = false;
-
-            }, 5000);
-        };
+            resultDiv.textContent = options.length === 1 ? '請至少輸入兩個選項' : '請設定選項';
+        }
         
-        nameInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(updateOptions, 300);
+        canvas.style.transition = 'none';
+        currentAngle = 0;
+        canvas.style.transform = `rotate(0deg)`;
+        drawWheel();
+    };
+    
+    const spin = () => {
+        if (isSpinning || options.length < 2) return;
+        isSpinning = true;
+        spinButton.disabled = true;
+        resultDiv.textContent = '轉動中...';
+
+        const spinAngle = Math.random() * 360 + 360 * 5;
+        const totalAngle = currentAngle + spinAngle;
+        
+        canvas.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.4, 1)';
+        canvas.style.transform = `rotate(${totalAngle}deg)`;
+
+        setTimeout(() => {
+            const finalAngle = totalAngle % 360;
+            const winningPointerAngle = (270 - finalAngle + 360) % 360;
+            const totalWeight = options.reduce((sum, opt) => sum + (opt.weight || 1), 0);
+            const anglePerWeightUnit = 360 / totalWeight;
+
+            let cumulativeAngle = 0;
+            let winnerIndex = -1;
+
+            for (let i = 0; i < options.length; i++) {
+                cumulativeAngle += options[i].weight * anglePerWeightUnit;
+                if (winningPointerAngle <= cumulativeAngle) {
+                    winnerIndex = i;
+                    break;
+                }
+            }
+
+            const winnerText = options[winnerIndex]?.name || '無結果';
+            resultDiv.textContent = `恭喜： ${winnerText}`;
+            
+            currentAngle = finalAngle;
+            canvas.style.transition = 'none';
+            canvas.style.transform = `rotate(${currentAngle}deg)`;
+
+            isSpinning = false;
+            spinButton.disabled = false;
+        }, 5000);
+    };
+
+    // --- Modal Logic ---
+
+    const escapeHTML = str => String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+
+    const updateOptionsFromDOM = () => {
+        const newOptions = [];
+        optionsList.querySelectorAll('.option-item').forEach(item => {
+            const name = item.querySelector('.name-input').value;
+            let weight = parseInt(item.querySelector('.weight-input').value, 10);
+            if (isNaN(weight) || weight < 1) weight = 1;
+            newOptions.push({ name, weight });
+        });
+        options = newOptions;
+    };
+
+    const renderOptionsEditor = () => {
+        const totalWeight = options.reduce((sum, opt) => sum + (opt.weight || 1), 0) || 1;
+        optionsList.innerHTML = ''; 
+
+        options.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            li.innerHTML = `
+                <button class="remove-btn" data-index="${index}">-</button>
+                <input type="text" class="name-input" data-index="${index}" value="${escapeHTML(option.name)}" placeholder="選項名稱">
+                <input type="number" class="weight-input" value="${option.weight}" min="1">
+                <span class="weight-fraction">權重: ${option.weight || 1}/${totalWeight}</span>
+            `;
+            optionsList.appendChild(li);
+        });
+        attachModalListeners();
+    };
+
+    const attachModalListeners = () => {
+        optionsList.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const indexToRemove = parseInt(e.currentTarget.dataset.index, 10);
+                updateOptionsFromDOM();
+                options.splice(indexToRemove, 1);
+                renderOptionsEditor();
+            });
         });
 
-        spinButton.addEventListener('click', spin);
+        optionsList.querySelectorAll('.name-input').forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const currentIndex = parseInt(e.currentTarget.dataset.index, 10);
+                    updateOptionsFromDOM();
+                    options.splice(currentIndex + 1, 0, { name: '', weight: 1 });
+                    renderOptionsEditor();
+                    const nextInput = optionsList.querySelector(`.name-input[data-index="${currentIndex + 1}"]`);
+                    if (nextInput) nextInput.focus();
+                }
+            });
+        });
+        
+        optionsList.querySelectorAll('.weight-input').forEach(input => {
+            input.addEventListener('input', () => {
+                updateOptionsFromDOM();
+                const totalWeight = options.reduce((sum, opt) => sum + (opt.weight || 1), 0) || 1;
+                optionsList.querySelectorAll('.weight-fraction').forEach((span, index) => {
+                    span.textContent = `${options[index].weight || 1}/${totalWeight}`;
+                });
+            });
+        });
+    };
 
-        updateOptions();
+    const openModal = () => {
+        renderOptionsEditor();
+        optionsModal.style.display = 'flex';
+    };
+
+    const closeModal = () => {
+        optionsModal.style.display = 'none';
+    };
+
+    const saveOptions = () => {
+        updateOptionsFromDOM();
+        options = options.filter(opt => opt.name.trim() !== ''); 
+        updateUIFromOptions();
+        closeModal();
+    };
+
+    editOptionsButton.addEventListener('click', openModal);
+    cancelButton.addEventListener('click', closeModal);
+    saveButton.addEventListener('click', saveOptions);
+    spinButton.addEventListener('click', spin);
+
+    addOptionButton.addEventListener('click', () => {
+        updateOptionsFromDOM(); 
+        options.push({ name: '', weight: 1 }); 
+        renderOptionsEditor(); 
+        const inputs = optionsList.querySelectorAll('.name-input');
+        if (inputs.length > 0) inputs[inputs.length - 1].focus();
     });
+
+    // Initial setup
+    updateUIFromOptions();
+});
 </script>
 </body>
 </html>
