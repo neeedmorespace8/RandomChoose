@@ -320,7 +320,7 @@
             <div class="modal-content">
                 <div class="question-input-group">
                     <span>🤔</span>
-                    <input type="text" id="questionInput" placeholder="請輸入問題標題 (例如：誰是起始玩家)">
+                    <input type="text" id="questionInput" placeholder="請輸入問題標題">
                 </div>
                 
                 <p>選項 (enter 可接續下一個選項)</p>
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
             li.className = 'option-item';
             li.innerHTML = `
                 <button class="remove-btn" data-index="${index}">-</button>
-                <input type="text" class="name-input" data-index="${index}" value="${escapeHTML(option.name)}" placeholder="選項名稱">
+                <input type="text" class="name-input" data-index="${index}" value="${escapeHTML(option.name)}" placeholder="選項名稱" enterkeyhint="enter">
                 <input type="number" class="weight-input" value="${option.weight}" min="1">
                 <span class="weight-fraction">權重: ${option.weight || 1}/${totalWeight}</span>
             `;
@@ -560,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (inputs.length > 0) inputs[inputs.length - 1].focus();
     });
 
-    // Initial setup
+   // Initial setup
     updateUIFromOptions();
 });
 </script>
