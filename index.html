@@ -263,10 +263,10 @@
             color: var(--primary-text-color);
             text-align: center;
             border-radius: 4px;
-            margin: 0 4px; /* 【修改處】縮小間距 */
+            margin: 0 4px 0 0; /* 【修改處】縮小間距 */
             -moz-appearance: textfield;
         }
-        
+
         .option-item .weight-input::-webkit-outer-spin-button,
         .option-item .weight-input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -287,16 +287,24 @@
         }
 
         .weight-percentage {
-            font-size: 0.9em;
+            font-size: 1em;
             font-weight: bold;
-            color: var(--primary-accent-color); /* 使用主題的亮藍色 */
-            margin-top: 2px; /* 和上方的分數稍微隔開 */
+            color: var(--primary-accent-color);
+            margin-top: 2px;
+            display: inline-block;
+            min-width: 35px;
+            text-align: right;
+        }
+
+        .percentage-display {
+            font-size: 0.9em;
+            color: var(--secondary-text-color);
         }
 
         .name-container {
             display: flex;
             align-items: center;
-            flex-grow: 1;
+            /* flex-grow: 1; */
             margin-right: 10px;
         }
 
@@ -521,11 +529,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="weight-container">
                     <div class="weight-fraction">
-                        權重:
                         <input type="number" class="weight-input" value="${option.weight}" min="1">
                         <span class="total-weight-display">/${totalWeight}</span>
                     </div>
-                    <span class="weight-percentage">${percentage}%</span>
+                    <div class="percentage-display">
+                        <span>權重: </span><span class="weight-percentage">${percentage}%</span>
+                    </div>
                 </div>
             `;
             optionsList.appendChild(li);
