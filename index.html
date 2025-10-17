@@ -8,7 +8,7 @@
         /* --- General Page Styles --- */
         :root {
             --background-color: #121212;
-            --surface-color: #1e1e1e;
+            --surface-color: #2a2a2a;
             --primary-text-color: #e0e0e0;
             --secondary-text-color: #a0a0a0;
             --primary-accent-color: #3498db;
@@ -300,8 +300,8 @@
             background-color: transparent;
             color: var(--primary-accent-color);
             text-align: left;
-            border-top: 1px solid #444;
-            border-bottom: 1px solid #444;
+            border-top: 1px solid #4a4a4a;
+            border-bottom: 1px solid #4a4a4a;
             margin-top: 10px;
         }
     </style>
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (totalWeight === 0) {
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-            ctx.fillStyle = '#333'; // 灰色
+            ctx.fillStyle = '#3a3a3a';
             ctx.fill();
             return;
         }
