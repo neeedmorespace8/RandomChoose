@@ -263,9 +263,10 @@
             color: var(--primary-text-color);
             text-align: center;
             border-radius: 4px;
-            margin: 0 10px;
+            margin: 0 4px; /* 【修改處】縮小間距 */
             -moz-appearance: textfield;
         }
+        
         .option-item .weight-input::-webkit-outer-spin-button,
         .option-item .weight-input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -273,8 +274,8 @@
         }
         
         .option-item .weight-fraction {
-            min-width: 40px;
-            text-align: right;
+            display: flex;
+            align-items: center;
             color: var(--secondary-text-color);
         }
 
@@ -283,6 +284,13 @@
             flex-direction: column;
             align-items: flex-end;
             margin-left: auto;
+        }
+
+        .weight-percentage {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: var(--primary-accent-color); /* 使用主題的亮藍色 */
+            margin-top: 2px; /* 和上方的分數稍微隔開 */
         }
 
         .name-container {
@@ -505,14 +513,19 @@ document.addEventListener('DOMContentLoaded', () => {
         options.forEach((option, index) => {
             const li = document.createElement('li');
             li.className = 'option-item';
+            const percentage = Math.round(((option.weight || 1) / totalWeight) * 100);
             li.innerHTML = `
                 <div class="name-container">
                     <button class="remove-btn" data-index="${index}">-</button>
                     <input type="text" class="name-input" data-index="${index}" value="${escapeHTML(option.name)}" placeholder="選項名稱" enterkeyhint="enter">
                 </div>
                 <div class="weight-container">
-                    <input type="number" class="weight-input" value="${option.weight}" min="1">
-                    <span class="weight-fraction">權重: ${option.weight || 1}/${totalWeight}</span>
+                    <div class="weight-fraction">
+                        權重:
+                        <input type="number" class="weight-input" value="${option.weight}" min="1">
+                        <span class="total-weight-display">/${totalWeight}</span>
+                    </div>
+                    <span class="weight-percentage">${percentage}%</span>
                 </div>
             `;
             optionsList.appendChild(li);
@@ -553,15 +566,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         optionsList.querySelectorAll('.weight-input').forEach(input => {
             input.addEventListener('input', () => {
-                // ... (原本的 input 邏輯不變) ...
                 updateOptionsFromDOM();
                 const totalWeight = options.reduce((sum, opt) => sum + (opt.weight || 1), 0) || 1;
-                optionsList.querySelectorAll('.weight-fraction').forEach((span, index) => {
-                    span.textContent = `權重: ${options[index].weight || 1}/${totalWeight}`;
+                optionsList.querySelectorAll('.option-item').forEach((item, index) => {
+                    const option = options[index];
+                    const percentage = Math.round(((option.weight || 1) / totalWeight) * 100);
+                    const totalSpan = item.querySelector('.total-weight-display');
+                    const percentageSpan = item.querySelector('.weight-percentage');
+                    if (totalSpan) totalSpan.textContent = `/${totalWeight}`;
+                    if (percentageSpan) percentageSpan.textContent = `${percentage}%`;
                 });
             });
 
             input.addEventListener('focus', (e) => {
+                // 當點擊時，立即反白選取所有文字
+                e.target.select();
                 setTimeout(() => {
                     e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 300);
