@@ -6,6 +6,10 @@
     <title>隨機轉盤</title>
     <style>
         /* --- General Page Styles --- */
+        html, body {
+            overscroll-behavior-y: contain;
+        }
+
         :root {
             --background-color: #121212;
             --surface-color: #333;
@@ -309,7 +313,7 @@
             margin-right: 10px;
         }
 
-        #addOptionButton {
+        /* #addOptionButton {
             width: 100%;
             padding: 15px;
             font-size: 1em;
@@ -320,7 +324,35 @@
             border-top: 1px solid #4a4a4a;
             border-bottom: 1px solid #4a4a4a;
             margin-top: 10px;
+        } */
+        #addOptionButton {
+            padding: 15px;
+            font-size: 1em;
+            font-weight: bold; /* 改為粗體以匹配儲存按鈕 */
+            background-color: var(--surface-color); /* 加上底色 */
+            color: var(--primary-accent-color);
+            text-align: center;
+            border: none;
+            margin-top: 0;
+            flex-grow: 1; /* 讓它自動填滿空間 */
         }
+        /* 【新增】底部容器樣式 */
+        .modal-footer {
+            display: flex;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #4a4a4a;
+            gap: 10px; /* 在兩個按鈕之間增加間距 */
+        }
+
+        /* 【新增】新的儲存按鈕樣式 */
+        #saveButtonFooter {
+            background-color: var(--primary-accent-color);
+            font-size: 1em;
+            padding: 15px;
+            margin-top: 0;
+        }
+
     </style>
 </head>
 <body>
@@ -352,7 +384,7 @@
             <div class="modal-header">
                 <button id="cancelButton">取消</button>
                 <h3>編輯選項</h3>
-                <button id="saveButton">儲存</button>
+                <button id="resetButton">重設</button>
             </div>
             <div class="modal-content">
                 <div class="question-input-group">
@@ -362,8 +394,11 @@
                 
                 <p>選項 (enter 可接續下一個選項)</p>
                 <ul id="optionsList">
-                    </ul>
-                <button id="addOptionButton">+ 添加新選項</button>
+                </ul>
+                <div class="modal-footer">
+                    <button id="addOptionButton">+ 添加新選項</button>
+                    <button id="saveButtonFooter">儲存</button>
+                </div>
             </div>
         </div>
     </div>
@@ -377,7 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const wheelTitle = document.getElementById('wheelTitle');
     const optionsModal = document.getElementById('optionsModal');
     const editOptionsButton = document.getElementById('editOptionsButton');
-    const saveButton = document.getElementById('saveButton');
+    const resetButton = document.getElementById('resetButton');
+    const saveButton = document.getElementById('saveButtonFooter');
     const cancelButton = document.getElementById('cancelButton');
     const questionInput = document.getElementById('questionInput');
     const optionsList = document.getElementById('optionsList');
@@ -618,6 +654,16 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelButton.addEventListener('click', closeModal);
     saveButton.addEventListener('click', saveOptions);
     spinButton.addEventListener('click', spin);
+
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            if (confirm('確定要重設所有選項嗎？將會清空所有標題和選項。')) {
+                options = []; // 清空選項
+                questionInput.value = ""; // 清空標題
+                renderOptionsEditor(); // 重新整理編輯器介面
+            }
+        });
+    }
 
     addOptionButton.addEventListener('click', () => {
         updateOptionsFromDOM(); 
